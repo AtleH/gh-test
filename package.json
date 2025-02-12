@@ -1,0 +1,10 @@
+{
+  "name": "gh-test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Atle Haugan <atleh@equinor.com>",
+  "license": "MIT",
+  "dependencies": {
+    "octokit": "^4.1.1"
+  }
+}
