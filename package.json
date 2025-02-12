@@ -5,6 +5,7 @@
   "author": "Atle Haugan <atleh@equinor.com>",
   "license": "MIT",
   "dependencies": {
+    "@octokit/rest": "^21.1.0",
     "octokit": "^4.1.1"
   }
 }
