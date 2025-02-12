@@ -1,49 +1,68 @@
-const fetchRepos = async (username, accessToken) => {
-    const url = `https://api.github.com/graphql`;
-    const query = `
-    {
-        user(login: "${username}") {
-            repositories(first: 10) {
-                nodes {
-                    name
+const fetchAllReposGraphQL = async (accessToken) => {
+    const url = 'https://api.github.com/graphql';
+    let hasNextPage = true;
+    let endCursor = null;
+
+    while (hasNextPage) {
+        const query = `
+        {
+            repositoryOwner(login: "equinor") {
+                repositories(
+                    first: 100
+                    ownerAffiliations: [OWNER]
+                    isFork: false
+                    isLocked: false
+                    orderBy: { field: UPDATED_AT, direction: DESC }
+                    after: ${endCursor ? `"${endCursor}"` : null}
+                ) {
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
+                    nodes {
+                        name
+                    }
                 }
             }
         }
-    }
-    `;
+        `;
 
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': `token ${accessToken}`,
-                'Accept': 'application/vnd.github.v3+json'
-            },
-            body: JSON.stringify({query})
-        });
+        try {
+            var startTime = performance.now()
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v4+json',
+                },
+                body: JSON.stringify({ query })
+            });
+            var endTime = performance.now()
 
-        if (!response.ok) {
-            throw new Error(`GitHub API error: ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`GitHub GraphQL API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.errors) {
+                throw new Error(`GitHub GraphQL API error: ${data.errors[0].message}`);
+            }
+            const repos = data.data.repositoryOwner.repositories.nodes;
+            const repoNames = repos.map(repo => repo.name);
+            console.log(`Reading ${repoNames.length} repos took ${(endTime - startTime).toFixed(0)} ms`);
+
+            // Check if there are more pages
+            hasNextPage = data.data.repositoryOwner.repositories.pageInfo.hasNextPage;
+            endCursor = data.data.repositoryOwner.repositories.pageInfo.endCursor;
+        } catch (error) {
+            console.error('Error fetching repositories using GraphQL:', error);
+            return;
         }
-
-        if (!response.ok) {
-            throw new Error(`GitHub GraphQL API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const repos = data.data.user.repositories.nodes;
-
-        if (repos.length === 0) {
-            console.log(`No repositories found for user: ${username}`);
-        } else {
-            repos.forEach(repo => console.log(repo.name));
-        }    } catch (error) {
-        console.error('Error fetching repositories:', error);
     }
 };
 
-// Replace with your GitHub username and personal access token
-const username = 'atleh';
+// Replace with your personal access token
 const accessToken = process.env.GITHUB_TOKEN;
 
-fetchRepos(username, accessToken);
+fetchAllReposGraphQL(accessToken);
