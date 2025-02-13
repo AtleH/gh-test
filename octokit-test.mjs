@@ -5,10 +5,10 @@ const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
 const query = `
 {
-    repositoryOwner(login: "equinor") {
+    repositoryOwner(login: "atleh") {
         repositories(
             first: 100
-            ownerAffiliations: [OWNER]
+            affiliations: [OWNER]
             isFork: false
             isLocked: false
             orderBy: { field: UPDATED_AT, direction: DESC }
