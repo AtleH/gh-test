@@ -95,7 +95,7 @@
     "@octokit/types" "^13.6.2"
     universal-user-agent "^7.0.2"
 
-"@octokit/graphql@^8.1.2":
+"@octokit/graphql@^8.1.2", "@octokit/graphql@^8.2.0":
   version "8.2.0"
   resolved "https://registry.yarnpkg.com/@octokit/graphql/-/graphql-8.2.0.tgz#983a7ebc6479338d78921a1ca9b4095f85991e28"
   integrity sha512-gejfDywEml/45SqbWTWrhfwvLBrcGYhOn50sPOjIeVvH6i7D16/9xcFA8dAJNp2HMcd+g4vru41g4E2RBiZvfQ==
