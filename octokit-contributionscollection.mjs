@@ -6,7 +6,10 @@ const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const query = `
 {
   user(login: "atleh") {
-    contributionsCollection
+    contributionsCollection (
+      from: "2021-01-01T00:00:00Z"
+      to: "2021-12-31T23:59:59Z"
+    )
     {
       commitContributionsByRepository(
         maxRepositories: 100) {
