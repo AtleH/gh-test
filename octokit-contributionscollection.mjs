@@ -1,4 +1,4 @@
-import { Octokit, App } from "octokit";
+import { Octokit } from "octokit";
 
 // Create a personal access token at https://github.com/settings/tokens/new?scopes=repo
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
@@ -6,10 +6,16 @@ const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const query = `
 {
   user(login: "atleh") {
-    contributionsCollection {
-      commitContributionsByRepository(maxRepositories: 100) {
+    contributionsCollection
+    {
+      commitContributionsByRepository(
+        maxRepositories: 100) {
         repository {
           name
+          description
+          collaborators {
+            edges {node {login} permission}
+          }
           owner {
             login
           }
@@ -20,11 +26,19 @@ const query = `
 }
 `;
 
-  // Compare: https://docs.github.com/en/rest/reference/users#get-the-authenticated-user
 const {
     user: { contributionsCollection },
   } = await octokit.graphql(query);
 
-for (const repo of contributionsCollection.commitContributionsByRepository) {
-    console.log(repo);
+const equinorRepos = contributionsCollection.commitContributionsByRepository.filter(repo => repo.repository.owner.login === "equinor");
+
+const whereIAmAdmin = equinorRepos.filter(repo => {
+    const edges = repo.repository.collaborators.edges;
+    const isMe = collaborator => collaborator.node.login.toLowerCase() === "atleh";
+    const isAdmin = collaborator => collaborator.permission === "ADMIN";
+    return edges.some(c => isMe(c) && isAdmin(c));
+});
+
+for (const repo of whereIAmAdmin) {
+    console.log(repo.repository.name);
 }
