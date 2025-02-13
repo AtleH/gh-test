@@ -2,19 +2,18 @@ import { Octokit } from "octokit";
 
 // Create a personal access token at https://github.com/settings/tokens/new?scopes=repo
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+const userName = "atleh";
 
 const query = `
 {
-  user(login: "atleh") {
-    contributionsCollection (
-      from: "2021-01-01T00:00:00Z"
-      to: "2021-12-31T23:59:59Z"
-    )
+  user(login: "${userName}") {
+    contributionsCollection
     {
       commitContributionsByRepository(
         maxRepositories: 100) {
         repository {
           name
+          isArchived
           description
           collaborators {
             edges {node {login} permission}
@@ -33,15 +32,12 @@ const {
     user: { contributionsCollection },
   } = await octokit.graphql(query);
 
-const equinorRepos = contributionsCollection.commitContributionsByRepository.filter(repo => repo.repository.owner.login === "equinor");
-
-const whereIAmAdmin = equinorRepos.filter(repo => {
+const myRepositories = contributionsCollection.commitContributionsByRepository.filter(repo => {
+    const isOrganizationRepo = repo => repo.repository.owner.login === "equinor";
+    const isArchived = repo => repo.repository.isArchived === true;
     const edges = repo.repository.collaborators.edges;
-    const isMe = collaborator => collaborator.node.login.toLowerCase() === "atleh";
-    const isAdmin = collaborator => collaborator.permission === "ADMIN";
-    return edges.some(c => isMe(c) && isAdmin(c));
+    const isLoggedInUser = c => c.node.login.toLowerCase() === userName.toLowerCase();
+    return isOrganizationRepo(repo) && !isArchived(repo) && edges.some(isLoggedInUser);
 });
 
-for (const repo of whereIAmAdmin) {
-    console.log(repo.repository.name);
-}
+console.log(myRepositories);
