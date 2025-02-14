@@ -36,9 +36,9 @@ const result = await gqlEndpoint(query);
 const myRepositories = result.user.contributionsCollection.commitContributionsByRepository.filter(repo => {
     const isOrganizationRepo = repo => repo.repository.owner.login === "equinor";
     const isArchived = repo => repo.repository.isArchived === true;
-    const edges = repo.repository.collaborators.edges;
     const isLoggedInUser = c => c.node.login.toLowerCase() === userName.toLowerCase();
-    return isOrganizationRepo(repo) && !isArchived(repo) && edges.some(isLoggedInUser);
+    const collaborators = repo.repository.collaborators.edges;
+    return isOrganizationRepo(repo) && !isArchived(repo) && collaborators.some(isLoggedInUser);
 });
 
 console.log(myRepositories);
