@@ -12,6 +12,7 @@ const query = `
       ) {
         nodes {
           name
+          description
         }
         pageInfo {
           endCursor
@@ -34,7 +35,7 @@ let i = 0;
 while (hasNextPage) {
   const result = await gqlEndpoint(query, { cursor });
   for (const node of result.repositoryOwner.repositories.nodes) {
-    console.log(node.name);
+    console.log(node.name, node.description);
   }
   console.log(result.repositoryOwner.repositories.pageInfo);
 
