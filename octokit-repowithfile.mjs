@@ -7,11 +7,21 @@ const query = `
     repositoryOwner(login: "equinor") {
       repositories(
         visibility: INTERNAL,
-        first: 5,
+        first: 3,
       ) {
         nodes {
           name
           description
+          object(expression: "HEAD:README.md") {
+            ... on Blob {
+              id
+            }
+          }
+          packageJson: object(expression: "HEAD:package.json") {
+            ... on Blob {
+              id
+            }
+          }
         }
       }
     }
@@ -26,6 +36,6 @@ const gqlEndpoint = graphql.defaults({
 
 const result = await gqlEndpoint(query);
 for (const node of result.repositoryOwner.repositories.nodes) {
-  console.log(node.name, node.description);
+  console.log(node);
 }
 
