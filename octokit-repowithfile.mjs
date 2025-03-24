@@ -3,21 +3,21 @@ import { graphql } from '@octokit/graphql';
 const userName = "atleh";
 
 const query = `
-  query ($repoName: String!) {
+  query () {
     repositoryOwner(login: "equinor") {
-      repository(name: $repoName) {
+      repositories(
+        visibility: INTERNAL,
+        last: 100,
+      ) {
+        nodes {
           name
           description
-          nonExistingFile: object(expression: "HEAD:non-existing.yaml") {
-            ... on Blob {
-              id
-            }
-          }
           catalogInfoFile: object(expression: "HEAD:catalog-info.yaml") {
             ... on Blob {
               id
             }
           }
+        }
       }
     }
   }`;
@@ -29,9 +29,7 @@ const gqlEndpoint = graphql.defaults({
   });
 
 
-const result = await gqlEndpoint(query, {repoName: "backstage"});
-console.log(result);
-// for (const node of result.repositoryOwner.repositories.nodes) {
-//   console.log(node);
-// }
-
+const result = await gqlEndpoint(query);
+for (const node of result.repositoryOwner.repositories.nodes) {
+  console.log(node.name, node.catalogInfoFile?.id);
+}
