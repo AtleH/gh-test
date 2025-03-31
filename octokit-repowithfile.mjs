@@ -17,6 +17,11 @@ const query = `
               id
             }
           }
+          page: object(expression: "HEAD:src/Markdown/radarPage.yaml") {
+            ... on Blob {
+              id
+            }
+          }
         }
       }
     }
@@ -31,5 +36,5 @@ const gqlEndpoint = graphql.defaults({
 
 const result = await gqlEndpoint(query);
 for (const node of result.repositoryOwner.repositories.nodes) {
-  console.log(node.name, node.catalogInfoFile?.id);
+  console.log(node.name, node.catalogInfoFile?.id, node.page?.id);
 }
