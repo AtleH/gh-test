@@ -6,7 +6,7 @@ const query = `
   query repositories($org: String!, $catalogPathRef: String!, $cursor: String) {
     repositoryOwner(login: $org) {
       login
-      repositories(first: 5, after: $cursor) {
+      repositories(first: 100, after: $cursor) {
         nodes {
           name
           catalogInfoFile: object(expression: $catalogPathRef) {
@@ -52,9 +52,18 @@ const gqlEndpoint = graphql.defaults({
     },
   });
 
+let cursor = null;
+let hasNextPage = true;
+let pageNo = 1;
 
-const result = await gqlEndpoint(query, {
-  org: "equinor",
-  catalogPathRef: "HEAD:catalog-info.yaml",
-});
-console.log(result);
+while (hasNextPage) {
+  console.log(`Page ${pageNo}`);
+  const result = await gqlEndpoint(query, {
+    org: "equinor",
+    catalogPathRef: "HEAD:catalog-info.yaml",
+    cursor: cursor,
+  });
+  cursor = result.repositoryOwner.repositories.pageInfo.endCursor;
+  hasNextPage = result.repositoryOwner.repositories.pageInfo.hasNextPage && pageNo++ < 5;
+  console.log(result);
+}
